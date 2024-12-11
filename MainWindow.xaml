@@ -6,25 +6,32 @@
         xmlns:local="clr-namespace:_2024_WpfApp6"
         mc:Ignorable="d"
         Title="2024WPF選課系統ver2" Height="700" Width="1000">
+    <!-- 定義視窗的屬性，包括類別、命名空間、標題、高度和寬度 -->
     <Grid>
+        <!-- 定義 Grid 的行結構 -->
         <Grid.RowDefinitions>
             <RowDefinition Height="50"/>
             <RowDefinition Height="500*"/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
+        <!-- 定義 Grid 的列結構 -->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="500*"/>
             <ColumnDefinition Width="100"/>
             <ColumnDefinition Width="500*"/>
         </Grid.ColumnDefinitions>
+        <!-- 頂部的 StackPanel，包含 Label 和 ComboBox -->
         <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Orientation="Horizontal" Background="LightCyan">
             <Label Content="學生" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" FontSize="16" FontWeight="Bold" Margin="100, 0, 0, 0"/>
             <ComboBox x:Name="cmbStudent" Width="250" Height="30" HorizontalAlignment="Left" VerticalAlignment="Center" VerticalContentAlignment="Center" Margin="30, 0, 0, 0" SelectionChanged="cmbStudent_SelectionChanged"/>
         </StackPanel>
+        <!-- 中間的 TabControl，包含兩個 TabItem -->
         <TabControl Grid.Row="1">
             <TabItem Header="以教師分類課程">
+                <!-- TreeView 顯示教師及其教授的課程 -->
                 <TreeView x:Name="tvTeacher" Background="#FFFAF7E7" SelectedItemChanged="tvTeacher_SelectedItemChanged">
                     <TreeView.Resources>
+                        <!-- 定義教師資料模板 -->
                         <HierarchicalDataTemplate DataType="{x:Type local:Teacher}" ItemsSource="{Binding TeachingCourses}">
                             <StackPanel Orientation="Horizontal" Margin="0,2,0,2">
                                 <Image Width="20" Height="20" Source="/teacher.png"/>
@@ -34,6 +41,7 @@
                                 <TextBlock Text=")" FontSize="14"/>
                             </StackPanel>
                         </HierarchicalDataTemplate>
+                        <!-- 定義課程資料模板 -->
                         <DataTemplate DataType="{x:Type local:Course}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Width="20" Height="20" Source="/course.png"/>
@@ -51,6 +59,7 @@
                 </TreeView>
             </TabItem>
             <TabItem Header="所有課程">
+                <!-- ListBox 顯示所有課程 -->
                 <ListBox x:Name="lbCourse" Background="#FFFAEBE7" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="lbCourse_SelectionChanged">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -75,18 +84,22 @@
                 </ListBox>
             </TabItem>
         </TabControl>
+        <!-- 右側的 StackPanel，包含三個按鈕 -->
         <StackPanel Grid.Column="1" Grid.Row="1" Background="#FFECE7E7" Orientation="Vertical">
             <Button x:Name="btnAdd" Content="選課" Width="80" Height="30" Margin="0, 50, 0, 10" FontSize="16" FontWeight="Bold" Click="btnAdd_Click"/>
-            <Button x:Name="btnDelete" Content="退選" Width="80" Height="30" Margin="0, 20, 0, 10" FontSize="16" FontWeight="Bold"/>
-            <Button x:Name="btnSave" Content="儲存紀錄" Width="80" Height="30" Margin="0, 20, 0, 10" FontSize="16" FontWeight="Bold"/>
+            <Button x:Name="btnDelete" Content="退選" Width="80" Height="30" Margin="0, 20, 0, 10" FontSize="16" FontWeight="Bold" Click="btnDelete_Click"/>
+            <Button x:Name="btnSave" Content="儲存紀錄" Width="80" Height="30" Margin="0, 20, 0, 10" FontSize="16" FontWeight="Bold" Click="btnSave_Click"/>
         </StackPanel>
-        <ListView Grid.Column="2" Grid.Row="1" d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFEEF7DF">
+        <!-- 右側的 ListView，顯示選課紀錄 -->
+        <ListView x:Name="lvRecord" Grid.Column="2" Grid.Row="1" d:ItemsSource="{d:SampleData ItemCount=5}" Background="#FFEEF7DF" SelectionChanged="lvRecord_SelectionChanged">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn/>
+                    <GridViewColumn Header="學生" DisplayMemberBinding="{Binding SelectedStudent.StudentName}"/>
+                    <GridViewColumn Header="課程" DisplayMemberBinding="{Binding SelectedCourse.CourseName}"/>
                 </GridView>
             </ListView.View>
         </ListView>
+        <!-- 底部的 StatusBar，顯示狀態訊息 -->
         <StatusBar Grid.Row="2" Grid.ColumnSpan="3" Background="#FFC7C2C2">
             <StatusBarItem>
                 <Label x:Name="labelStatus" Content="Ready" Margin="100,0,0,0"/>
@@ -94,3 +107,4 @@
         </StatusBar>
     </Grid>
 </Window>
+

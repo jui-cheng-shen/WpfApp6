@@ -1,5 +1,8 @@
-﻿using System.Windows;
-using System.Windows.Media.Media3D;
+﻿using Microsoft.Win32;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using System.Windows;
 
 namespace _2024_WpfApp6
 {
@@ -8,15 +11,18 @@ namespace _2024_WpfApp6
     /// </summary>
     public partial class MainWindow : Window
     {
+        // 定義學生、課程、教師和紀錄的列表
         List<Student> students = new List<Student>();
         List<Course> courses = new List<Course>();
         List<Teacher> teachers = new List<Teacher>();
         List<Record> records = new List<Record>();
 
+        // 定義選取的學生、課程、教師和紀錄
         Student selectedStudent = null;
         Course selectedCourse = null;
         Teacher selectedTeacher = null;
         Record selectedRecord = null;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -53,6 +59,7 @@ namespace _2024_WpfApp6
             teacher3.TeachingCourses.Add(new Course(teacher3) { CourseId = "C007", CourseName = "智慧型系統應用", CourseDescription = "本課程完整而淺顯地介紹研習人工智慧技術、智慧型系統與相關機電資領域所需的專業基礎，並詳細探討各種新進的智慧型系統應用技術。", Type = "選修", Points = 3, OpeningClass = "四技控晶四甲, 四技控晶四乙" });
             teachers.AddRange(new Teacher[] { teacher1, teacher2, teacher3 });
 
+            // 將所有課程加入課程列表
             foreach (Teacher teacher in teachers)
             {
                 foreach (Course course in teacher.TeachingCourses)
@@ -65,33 +72,126 @@ namespace _2024_WpfApp6
 
         private void cmbStudent_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            // 當選取的學生改變時，更新選取的學生並顯示狀態
             selectedStudent = cmbStudent.SelectedItem as Student;
-            labelStatus.Content = $"選擇學生：{selectedStudent.StudentName}";
+            if (selectedStudent != null)
+            {
+                labelStatus.Content = $"選擇學生：{selectedStudent.StudentName}";
+            }
         }
 
         private void tvTeacher_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
+            // 當選取的教師或課程改變時，更新選取的教師或課程並顯示狀態
             if (tvTeacher.SelectedItem is Course)
             {
                 selectedCourse = tvTeacher.SelectedItem as Course;
-                labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
+                if (selectedCourse != null)
+                {
+                    labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
+                }
             }
             else if (tvTeacher.SelectedItem is Teacher)
             {
                 selectedTeacher = tvTeacher.SelectedItem as Teacher;
-                labelStatus.Content = $"選擇教師：{selectedTeacher.TeacherName}";
+                if (selectedTeacher != null)
+                {
+                    labelStatus.Content = $"選擇教師：{selectedTeacher.TeacherName}";
+                }
             }
         }
 
         private void lbCourse_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            // 當選取的課程改變時，更新選取的課程並顯示狀態
             selectedCourse = lbCourse.SelectedItem as Course;
-            labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
+            if (selectedCourse != null)
+            {
+                labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
+            }
         }
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
+            // 當按下新增按鈕時，檢查是否有選取學生和課程
+            if (selectedStudent == null || selectedCourse == null)
+            {
+                MessageBox.Show("請選取學生或課程");
+                return;
+            }
+            else
+            {
+                // 新增選取的學生和課程到紀錄中
+                Record newRecord = new Record
+                {
+                    SelectedStudent = selectedStudent,
+                    SelectedCourse = selectedCourse
+                };
 
+                // 檢查是否已經存在相同的紀錄
+                foreach (Record r in records)
+                {
+                    if (r.Equals(newRecord))
+                    {
+                        MessageBox.Show("此學生已選取此課程");
+                        return;
+                    }
+                }
+                records.Add(newRecord);
+                lvRecord.ItemsSource = records;
+                lvRecord.Items.Refresh();
+            }
+        }
+
+        private void btnDelete_Click(object sender, RoutedEventArgs e)
+        {
+            // 當按下刪除按鈕時，檢查是否有選取紀錄
+            if (selectedRecord == null)
+            {
+                MessageBox.Show("請選取紀錄");
+                return;
+            }
+            else
+            {
+                // 刪除選取的紀錄
+                records.Remove(selectedRecord);
+                lvRecord.ItemsSource = records;
+                lvRecord.Items.Refresh();
+            }
+        }
+
+        private void lvRecord_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            // 當選取的紀錄改變時，更新選取的紀錄並顯示狀態
+            if (lvRecord.SelectedItem is Record)
+            {
+                selectedRecord = lvRecord.SelectedItem as Record;
+                if (selectedRecord != null)
+                {
+                    labelStatus.Content = $"選擇紀錄：{selectedRecord.SelectedStudent.StudentName} - {selectedRecord.SelectedCourse.CourseName}";
+                }
+            }
+        }
+
+        private void btnSave_Click(object sender, RoutedEventArgs e)
+        {
+            // 當按下儲存按鈕時，開啟儲存檔案對話框
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Json Files(*.json)|*.json|All Files(*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                // 將紀錄序列化為JSON並儲存到檔案
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true,
+                    ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                    Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                };
+                string json = JsonSerializer.Serialize(records, options);
+                File.WriteAllText(saveFileDialog.FileName, json);
+                MessageBox.Show("資料已儲存");
+            }
         }
     }
 }
+

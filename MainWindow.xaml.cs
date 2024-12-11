@@ -1,5 +1,5 @@
 ﻿using System.Windows;
-using System.Windows.Input;
+using System.Windows.Media.Media3D;
 
 namespace _2024_WpfApp6
 {
@@ -11,6 +11,12 @@ namespace _2024_WpfApp6
         List<Student> students = new List<Student>();
         List<Course> courses = new List<Course>();
         List<Teacher> teachers = new List<Teacher>();
+        List<Record> records = new List<Record>();
+
+        Student selectedStudent = null;
+        Course selectedCourse = null;
+        Teacher selectedTeacher = null;
+        Record selectedRecord = null;
         public MainWindow()
         {
             InitializeComponent();
@@ -46,16 +52,46 @@ namespace _2024_WpfApp6
             teacher3.TeachingCourses.Add(new Course(teacher3) { CourseId = "C006", CourseName = "資料庫程式設計", CourseDescription = "本課程使用SQL Server資料庫和C#語言來設計資料庫應用程式", Type = "必修", Points = 6, OpeningClass = "五專資工三甲" });
             teacher3.TeachingCourses.Add(new Course(teacher3) { CourseId = "C007", CourseName = "智慧型系統應用", CourseDescription = "本課程完整而淺顯地介紹研習人工智慧技術、智慧型系統與相關機電資領域所需的專業基礎，並詳細探討各種新進的智慧型系統應用技術。", Type = "選修", Points = 3, OpeningClass = "四技控晶四甲, 四技控晶四乙" });
             teachers.AddRange(new Teacher[] { teacher1, teacher2, teacher3 });
+
+            foreach (Teacher teacher in teachers)
+            {
+                foreach (Course course in teacher.TeachingCourses)
+                {
+                    courses.Add(course);
+                }
+            }
+            lbCourse.ItemsSource = courses;
         }
 
-        private void cmbStudent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cmbStudent_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            Student student = cmbStudent.SelectedItem as Student;
-            if (student != null)
+            selectedStudent = cmbStudent.SelectedItem as Student;
+            labelStatus.Content = $"選擇學生：{selectedStudent.StudentName}";
+        }
+
+        private void tvTeacher_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (tvTeacher.SelectedItem is Course)
             {
-                // 將學生選課資料填入lvCourse
-                lvCourse.ItemsSource = student.SelectedCourses;
+                selectedCourse = tvTeacher.SelectedItem as Course;
+                labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
             }
+            else if (tvTeacher.SelectedItem is Teacher)
+            {
+                selectedTeacher = tvTeacher.SelectedItem as Teacher;
+                labelStatus.Content = $"選擇教師：{selectedTeacher.TeacherName}";
+            }
+        }
+
+        private void lbCourse_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            selectedCourse = lbCourse.SelectedItem as Course;
+            labelStatus.Content = $"選擇課程：{selectedCourse.CourseName}";
+        }
+
+        private void btnAdd_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
